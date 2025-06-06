@@ -41,10 +41,10 @@ HOST_PORT=${HOST_PORT:-8080}
 CONTAINER_NAME=${CONTAINER_NAME:-petclinic}
 RUN_BACKGROUND=${RUN_BACKGROUND:-0}
 
-cat <<SCRIPT > /tmp/run-petclinic.sh
+cat <<'SCRIPT' > /tmp/run-petclinic.sh
 set -e
-apt-get update
-apt-get install -y git curl
+apt-get update -y
+apt-get install -y git curl >/dev/null
 
 # Clone the Spring PetClinic source
 rm -rf spring-petclinic
