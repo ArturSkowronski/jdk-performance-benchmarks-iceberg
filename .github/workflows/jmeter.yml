@@ -1,0 +1,49 @@
+name: PetClinic JMeter Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  jmeter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start PetClinic container
+        run: |
+          docker run -d --name petclinic -p 8080:8080 eclipse-temurin:11-jdk-jammy bash -c '
+            set -e
+            apt-get update
+            apt-get install -y git curl > /dev/null
+            git clone --depth 1 https://github.com/spring-projects/spring-petclinic.git
+            cd spring-petclinic
+            ./mvnw -q package
+            java -jar target/*.jar
+          '
+
+      - name: Wait for PetClinic
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:8080 >/dev/null; then
+              echo "PetClinic started"
+              break
+            fi
+            sleep 5
+          done
+
+      - name: Run JMeter test
+        run: |
+          docker run --rm -v ${{ github.workspace }}/jmeter:/tests justb4/jmeter:5.5 -n -t /tests/petclinic.jmx -l /tests/results.jtl
+
+      - name: Stop PetClinic
+        if: always()
+        run: docker rm -f petclinic
+
+      - name: Upload JMeter Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jmeter-results
+          path: jmeter/results.jtl
