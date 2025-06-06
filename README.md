@@ -25,6 +25,20 @@ HOST_PORT=9090 ./scripts/run_petclinic.sh 23
 When the container is running, access the application at `http://localhost:$HOST_PORT`.
 Press `Ctrl+C` to stop and remove the container.
 
+## Java Flight Recorder
+
+To capture a JFR recording from a running container, use `scripts/start_jfr.sh`.
+Pass the container name or ID, the recording duration in seconds and an optional
+output file name:
+
+```bash
+# Record 60 seconds from the container named "petclinic" and save to myrun.jfr
+./scripts/start_jfr.sh petclinic 60 myrun.jfr
+```
+
+If your container is called `petclinic` (as in the CI workflow), the container
+argument can be omitted.
+
 ## Continuous Integration
 
 The repository includes a GitHub Actions workflow that runs the PetClinic application in a container and executes a small JMeter test plan against it. The results of the JMeter run are uploaded as workflow artifacts.
