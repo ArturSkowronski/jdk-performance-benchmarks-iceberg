@@ -24,3 +24,7 @@ HOST_PORT=9090 ./scripts/run_petclinic.sh 23
 
 When the container is running, access the application at `http://localhost:$HOST_PORT`.
 Press `Ctrl+C` to stop and remove the container.
+
+## Continuous Integration
+
+The repository includes a GitHub Actions workflow that runs the PetClinic application in a container and executes a small JMeter test plan against it. The results of the JMeter run are uploaded as workflow artifacts.
