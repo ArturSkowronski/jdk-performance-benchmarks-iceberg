@@ -14,6 +14,7 @@
 set -euo pipefail
 
 JDK_VERSION="${1:-11}"
+JMX_PORT="${JMX_PORT:-9010}"
 
 case "$JDK_VERSION" in
   8)
@@ -47,11 +48,22 @@ cd spring-petclinic
 
 # Build and run using the Maven wrapper
 ./mvnw -q package
-java -jar target/*.jar
+JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS -Dcom.sun.management.jmxremote \ 
+  -Dcom.sun.management.jmxremote.port=$JMX_PORT \ 
+  -Dcom.sun.management.jmxremote.rmi.port=$JMX_PORT \ 
+  -Dcom.sun.management.jmxremote.local.only=false \ 
+  -Dcom.sun.management.jmxremote.ssl=false \ 
+  -Dcom.sun.management.jmxremote.authenticate=false \ 
+  -Djava.rmi.server.hostname=localhost" \
+  java -jar target/*.jar
 SCRIPT
 
 chmod +x /tmp/run-petclinic.sh
 
 # Run the container and execute the script inside
-exec docker run --rm -it -p ${HOST_PORT}:8080 -v /tmp/run-petclinic.sh:/run-petclinic.sh "$IMAGE" bash /run-petclinic.sh
+exec docker run --rm -it \
+  -p ${HOST_PORT}:8080 \
+  -p ${JMX_PORT}:${JMX_PORT} \
+  -e JMX_PORT=${JMX_PORT} \
+  -v /tmp/run-petclinic.sh:/run-petclinic.sh "$IMAGE" bash /run-petclinic.sh
 
