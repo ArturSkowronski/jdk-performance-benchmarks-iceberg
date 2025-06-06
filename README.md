@@ -9,7 +9,7 @@ This repository contains a helper script for running the [Spring PetClinic](http
 
 ## Usage
 
-Run `scripts/run_petclinic.sh` and pass the desired JDK version (8, 11 or 23). By default the application is exposed on port `8080`. You can override the port by setting the environment variable `HOST_PORT`.
+Run `scripts/run_petclinic.sh` and pass the desired JDK version (8, 11, 23 or `graalvm`). By default the application is exposed on port `8080`. You can override the port with `HOST_PORT`. When running in the background the container will be named `petclinic` by default which can be changed with `CONTAINER_NAME`.
 
 ```bash
 # Start PetClinic with JDK 11 (default)
@@ -20,6 +20,9 @@ Run `scripts/run_petclinic.sh` and pass the desired JDK version (8, 11 or 23). B
 
 # Start with JDK 23 on port 9090
 HOST_PORT=9090 ./scripts/run_petclinic.sh 23
+
+# Start with GraalVM 23 detached
+RUN_BACKGROUND=1 ./scripts/run_petclinic.sh graalvm
 ```
 
 When the container is running, access the application at `http://localhost:$HOST_PORT`.
@@ -38,6 +41,18 @@ output file name:
 
 If your container is called `petclinic` (as in the CI workflow), the container
 argument can be omitted.
+
+## Comparing JDK 23 with GraalVM 23
+
+`scripts/compare_graalvm.sh` automates running the PetClinic benchmark on both
+JDK 23 and GraalVM 23. It executes the bundled JMeter test plan while collecting
+JFR recordings for each run and places the results under `results/`. If Java
+Mission Control (`jmc`) is available on the host, the recordings are opened
+automatically.
+
+```bash
+./scripts/compare_graalvm.sh
+```
 
 ## Continuous Integration
 

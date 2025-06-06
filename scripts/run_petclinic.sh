@@ -5,11 +5,12 @@
 # the container runs.
 #
 # Usage: ./run_petclinic.sh [JDK_VERSION]
-#   JDK_VERSION can be 8, 11, or 23 (default: 11)
+#   JDK_VERSION can be 8, 11, 23 or graalvm (default: 11)
 #
 # Example:
 #   ./run_petclinic.sh 8
 #   ./run_petclinic.sh 23
+#   ./run_petclinic.sh graalvm
 
 set -euo pipefail
 
@@ -25,15 +26,20 @@ case "$JDK_VERSION" in
   23)
     IMAGE="eclipse-temurin:23-jdk-jammy"
     ;;
+  graalvm)
+    IMAGE="ghcr.io/graalvm/jdk:23"
+    ;;
   *)
     echo "Unsupported JDK version: $JDK_VERSION"
-    echo "Valid versions: 8, 11, 23"
+    echo "Valid versions: 8, 11, 23, graalvm"
     exit 1
     ;;
 esac
 
 # Expose PetClinic on host port 8080
 HOST_PORT=${HOST_PORT:-8080}
+CONTAINER_NAME=${CONTAINER_NAME:-petclinic}
+RUN_BACKGROUND=${RUN_BACKGROUND:-0}
 
 cat <<SCRIPT > /tmp/run-petclinic.sh
 set -e
@@ -53,5 +59,11 @@ SCRIPT
 chmod +x /tmp/run-petclinic.sh
 
 # Run the container and execute the script inside
-exec docker run --rm -it -p ${HOST_PORT}:8080 -v /tmp/run-petclinic.sh:/run-petclinic.sh "$IMAGE" bash /run-petclinic.sh
+if [ "$RUN_BACKGROUND" -eq 1 ]; then
+  docker run --rm -d --name "$CONTAINER_NAME" -p ${HOST_PORT}:8080 \
+    -v /tmp/run-petclinic.sh:/run-petclinic.sh "$IMAGE" bash /run-petclinic.sh
+else
+  exec docker run --rm -it --name "$CONTAINER_NAME" -p ${HOST_PORT}:8080 \
+    -v /tmp/run-petclinic.sh:/run-petclinic.sh "$IMAGE" bash /run-petclinic.sh
+fi
 
