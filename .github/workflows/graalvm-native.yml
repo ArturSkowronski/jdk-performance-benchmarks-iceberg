@@ -1,0 +1,41 @@
+name: PetClinic GraalVM Native Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  graalvm-native:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start PetClinic container (GraalVM native)
+        run: |
+          RUN_BACKGROUND=1 CONTAINER_NAME=petclinic ./scripts/run_petclinic.sh graalvm
+
+      - name: Wait for PetClinic
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:8080 >/dev/null; then
+              echo "PetClinic started"
+              break
+            fi
+            sleep 5
+          done
+
+      - name: Run JMeter test
+        run: |
+          docker run --rm -v ${{ github.workspace }}/jmeter:/tests justb4/jmeter:5.5 -n -t /tests/petclinic.jmx -l /tests/results.jtl
+
+      - name: Stop PetClinic
+        if: always()
+        run: docker rm -f petclinic
+
+      - name: Upload JMeter Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jmeter-results-native
+          path: jmeter/results.jtl
