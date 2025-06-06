@@ -29,3 +29,11 @@ sleep "$DURATION"
 # Copy result to host
 docker cp "$CONTAINER":/tmp/$OUTPUT "$OUTPUT"
 echo "JFR recording saved to $OUTPUT"
+
+# Launch Java Mission Control if available
+if command -v jmc >/dev/null 2>&1; then
+  echo "Opening recording in Java Mission Control..."
+  jmc "$OUTPUT" &
+else
+  echo "Java Mission Control (jmc) not found in PATH" >&2
+fi

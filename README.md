@@ -25,6 +25,20 @@ HOST_PORT=9090 ./scripts/run_petclinic.sh 23
 When the container is running, access the application at `http://localhost:$HOST_PORT`.
 Press `Ctrl+C` to stop and remove the container.
 
+## VisualVM and JMX
+
+`run_petclinic.sh` exposes a JMX port to make it easy to connect tools such as
+[VisualVM](https://visualvm.github.io/). The default port is `9010` and can be
+changed by setting the `JMX_PORT` environment variable:
+
+```bash
+# Run the application and expose JMX on port 9011
+JMX_PORT=9011 ./scripts/run_petclinic.sh
+```
+
+In VisualVM choose *Add JMX Connection* and connect to `localhost:9011` (or the
+port you specified).
+
 ## Java Flight Recorder
 
 To capture a JFR recording from a running container, use `scripts/start_jfr.sh`.
@@ -38,6 +52,11 @@ output file name:
 
 If your container is called `petclinic` (as in the CI workflow), the container
 argument can be omitted.
+
+`start_jfr.sh` automatically launches
+[Java Mission Control](https://www.oracle.com/java/technologies/javamissioncontrol.html)
+if the `jmc` command is available on your system, opening the recording for
+inspection.
 
 ## Continuous Integration
 
