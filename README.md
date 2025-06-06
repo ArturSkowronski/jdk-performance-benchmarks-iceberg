@@ -9,7 +9,7 @@ This repository contains a helper script for running the [Spring PetClinic](http
 
 ## Usage
 
-Run `scripts/run_petclinic.sh` and pass the desired JDK version (8, 11 or 23). By default the application is exposed on port `8080`. You can override the port by setting the environment variable `HOST_PORT`.
+Run `scripts/run_petclinic.sh` and pass the desired JDK version (8, 11 or 23). A second optional argument enables extra features: `appcds` turns on Application Class-Data Sharing and `crac` starts the application using a CRaC-enabled JDK. By default the application is exposed on port `8080`. You can override the port by setting the environment variable `HOST_PORT`.
 
 ```bash
 # Start PetClinic with JDK 11 (default)
@@ -20,10 +20,22 @@ Run `scripts/run_petclinic.sh` and pass the desired JDK version (8, 11 or 23). B
 
 # Start with JDK 23 on port 9090
 HOST_PORT=9090 ./scripts/run_petclinic.sh 23
+
+# Start with AppCDS enabled
+./scripts/run_petclinic.sh 23 appcds
+
+# Start using a CRaC-enabled JDK
+./scripts/run_petclinic.sh 23 crac
 ```
+
+The `appcds` option generates a class data sharing archive on first startup and
+then runs the application using that archive.
 
 When the container is running, access the application at `http://localhost:$HOST_PORT`.
 Press `Ctrl+C` to stop and remove the container.
+
+When running in `crac` mode the script uses a CRaC-enabled JDK image. Set the
+`CRAC_IMAGE` environment variable to override the Docker image name if needed.
 
 ## Java Flight Recorder
 
