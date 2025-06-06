@@ -15,6 +15,7 @@
 set -euo pipefail
 
 JDK_VERSION="${1:-11}"
+JMX_PORT="${JMX_PORT:-9010}"
 
 case "$JDK_VERSION" in
   8)
@@ -57,18 +58,34 @@ if [ "$JDK_VERSION" = "graalvm" ]; then
   ./target/spring-petclinic
 else
   ./mvnw -q package
+JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS -Dcom.sun.management.jmxremote \ 
+  -Dcom.sun.management.jmxremote.port=$JMX_PORT \ 
+  -Dcom.sun.management.jmxremote.rmi.port=$JMX_PORT \ 
+  -Dcom.sun.management.jmxremote.local.only=false \ 
+  -Dcom.sun.management.jmxremote.ssl=false \ 
+  -Dcom.sun.management.jmxremote.authenticate=false \ 
+  -Djava.rmi.server.hostname=localhost" \
   java -jar target/*.jar
 fi
-SCRIPT
 
 chmod +x /tmp/run-petclinic.sh
 
 # Run the container and execute the script inside
 if [ "$RUN_BACKGROUND" -eq 1 ]; then
-  docker run --rm -d --name "$CONTAINER_NAME" -e JDK_VERSION="$JDK_VERSION" -p ${HOST_PORT}:8080 \
+  docker run \
+  -p ${HOST_PORT}:8080 \
+  -p ${JMX_PORT}:${JMX_PORT} \
+  -e JMX_PORT=${JMX_PORT} \
+    --rm -d --name "$CONTAINER_NAME" -e JDK_VERSION="$JDK_VERSION" -p ${HOST_PORT}:8080 \
     -v /tmp/run-petclinic.sh:/run-petclinic.sh "$IMAGE" bash /run-petclinic.sh
 else
-  exec docker run --rm -it --name "$CONTAINER_NAME" -e JDK_VERSION="$JDK_VERSION" -p ${HOST_PORT}:8080 \
+  exec docker run --rm -it 
+\
+  -p ${HOST_PORT}:8080 \
+  -p ${JMX_PORT}:${JMX_PORT} \
+  -e JMX_PORT=${JMX_PORT} \  
+--name "$CONTAINER_NAME" -e JDK_VERSION="$JDK_VERSION" -p ${HOST_PORT}:8080 \
     -v /tmp/run-petclinic.sh:/run-petclinic.sh "$IMAGE" bash /run-petclinic.sh
 fi
+
 
