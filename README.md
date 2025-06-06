@@ -10,6 +10,7 @@ This repository contains a helper script for running the [Spring PetClinic](http
 ## Usage
 
 Run `scripts/run_petclinic.sh` and pass the desired JDK version (8, 11, 23 or `graalvm`). By default the application is exposed on port `8080`. You can override the port with `HOST_PORT`. When running in the background the container will be named `petclinic` by default which can be changed with `CONTAINER_NAME`.
+When `graalvm` is selected the application is first compiled to a native image using GraalVM's `native-image` tool before running.
 
 ```bash
 # Start PetClinic with JDK 11 (default)
@@ -56,4 +57,4 @@ automatically.
 
 ## Continuous Integration
 
-The repository includes a GitHub Actions workflow that runs the PetClinic application in a container and executes a small JMeter test plan against it. The results of the JMeter run are uploaded as workflow artifacts.
+The repository includes a GitHub Actions workflow that runs the PetClinic application in a container and executes a small JMeter test plan against it. The results of the JMeter run are uploaded as workflow artifacts. A separate workflow `graalvm-native.yml` builds and benchmarks the native image version using GraalVM.

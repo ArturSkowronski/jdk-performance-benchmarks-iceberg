@@ -51,19 +51,24 @@ rm -rf spring-petclinic
 git clone --depth 1 https://github.com/spring-projects/spring-petclinic.git
 cd spring-petclinic
 
-# Build and run using the Maven wrapper
-./mvnw -q package
-java -jar target/*.jar
+if [ "$JDK_VERSION" = "graalvm" ]; then
+  gu install native-image >/dev/null
+  ./mvnw -q -Pnative -DskipTests package
+  ./target/spring-petclinic
+else
+  ./mvnw -q package
+  java -jar target/*.jar
+fi
 SCRIPT
 
 chmod +x /tmp/run-petclinic.sh
 
 # Run the container and execute the script inside
 if [ "$RUN_BACKGROUND" -eq 1 ]; then
-  docker run --rm -d --name "$CONTAINER_NAME" -p ${HOST_PORT}:8080 \
+  docker run --rm -d --name "$CONTAINER_NAME" -e JDK_VERSION="$JDK_VERSION" -p ${HOST_PORT}:8080 \
     -v /tmp/run-petclinic.sh:/run-petclinic.sh "$IMAGE" bash /run-petclinic.sh
 else
-  exec docker run --rm -it --name "$CONTAINER_NAME" -p ${HOST_PORT}:8080 \
+  exec docker run --rm -it --name "$CONTAINER_NAME" -e JDK_VERSION="$JDK_VERSION" -p ${HOST_PORT}:8080 \
     -v /tmp/run-petclinic.sh:/run-petclinic.sh "$IMAGE" bash /run-petclinic.sh
 fi
 
