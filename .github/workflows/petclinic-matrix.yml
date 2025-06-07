@@ -1,4 +1,4 @@
-name: PetClinic JMeter Tests
+name: PetClinic Build Matrix
 
 on:
   push:
@@ -6,23 +6,31 @@ on:
   pull_request:
 
 jobs:
-  jmeter:
+  build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        jdk: [ "8", "11", "23", "graalvm", "crac" ]
     steps:
       - uses: actions/checkout@v4
 
-      - name: Start PetClinic container
+      - name: Start PetClinic container (${{ matrix.jdk }})
         run: |
           set -euxo pipefail
-          docker run -d --name petclinic -p 8080:8080 eclipse-temurin:11-jdk bash -c '
-            set -euxo pipefail
-            apt-get update
-            apt-get install -y git curl > /dev/null
-            git clone --depth 1 https://github.com/spring-projects/spring-petclinic.git
-            cd spring-petclinic
-            ./mvnw -q package
-            java -jar target/*.jar
-          '
+          CRAC_IMAGE=""
+          case "${{ matrix.jdk }}" in
+            crac)
+              ARGS="23 crac"
+              CRAC_IMAGE="ghcr.io/crac/openjdk17:latest"
+              ;;
+            graalvm)
+              ARGS="graalvm"
+              ;;
+            *)
+              ARGS="${{ matrix.jdk }}"
+              ;;
+          esac
+          RUN_BACKGROUND=1 CONTAINER_NAME=petclinic CRAC_IMAGE="$CRAC_IMAGE" ./scripts/run_petclinic.sh $ARGS
 
       - name: Wait for PetClinic
         run: |
@@ -57,5 +65,5 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: jmeter-results
+          name: jmeter-results-${{ matrix.jdk }}
           path: jmeter/results.jtl

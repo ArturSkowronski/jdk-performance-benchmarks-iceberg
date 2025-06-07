@@ -14,9 +14,12 @@
 #
 
 set -euo pipefail
+set -x
 
 JDK_VERSION="${1:-11}"
 MODE="${2:-}"
+
+echo "JDK_VERSION=$JDK_VERSION MODE=$MODE"
 
 # Validate MODE, if provided
 if [[ -n "$MODE" && "$MODE" != "appcds" && "$MODE" != "crac" ]]; then
@@ -33,9 +36,9 @@ RUN_BACKGROUND="${RUN_BACKGROUND:-0}"
 
 # Select base image
 case "$JDK_VERSION" in
-  8)      IMAGE="eclipse-temurin:8-jdk-jammy" ;;
-  11)     IMAGE="eclipse-temurin:11-jdk-jammy" ;;
-  23)     IMAGE="eclipse-temurin:23-jdk-jammy" ;;
+  8)      IMAGE="eclipse-temurin:8-jdk" ;;
+  11)     IMAGE="eclipse-temurin:11-jdk" ;;
+  23)     IMAGE="eclipse-temurin:23-jdk" ;;
   graalvm) IMAGE="ghcr.io/graalvm/jdk:23" ;;
   *)
     echo "Unsupported JDK version: $JDK_VERSION"
@@ -44,15 +47,17 @@ case "$JDK_VERSION" in
     ;;
 esac
 
+echo "Using Docker image: $IMAGE"
+
 # If CRaC mode selected, allow custom CRaC-enabled image
 if [[ "$MODE" == "crac" ]]; then
-  IMAGE="${CRAC_IMAGE:-crac-jdk:17}"
+  IMAGE="${CRAC_IMAGE:-ghcr.io/crac/openjdk17:latest}"
 fi
 
 # Create the script that will run *inside* the container
 cat <<'SCRIPT' >/tmp/run-petclinic.sh
 #!/usr/bin/env bash
-set -e
+set -euxo pipefail
 
 # Expect env vars:  MODE JDK_VERSION JMX_PORT
 apt-get update -y >/dev/null
