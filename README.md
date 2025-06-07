@@ -8,9 +8,21 @@ This repository contains a helper script for running the [Spring PetClinic](http
 - Network access to download Docker images and Maven dependencies.
 
 ## Usage
-Run `scripts/run_petclinic.sh` and pass the desired JDK version (8, 11 or 23). 
-Run `scripts/run_petclinic.sh` and pass the desired JDK version (8, 11, 23 or `graalvm`). By default the application is exposed on port `8080`. A second optional argument enables extra features: `appcds` turns on Application Class-Data Sharing and `crac` starts the application using a CRaC-enabled JDK. By default the application is exposed on port `8080`. You can override the port by setting the environment variable `HOST_PORT`. You can override the port with `HOST_PORT`. When running in the background the container will be named `petclinic` by default which can be changed with `CONTAINER_NAME`.
+Run `scripts/run_petclinic.sh` and pass the desired JDK version (8, 11, 23 or `graalvm`).
+An optional second argument enables extra features: `appcds` turns on Application Class-Data Sharing and `crac` starts the application using a CRaC-enabled JDK.
+The application exposes port `8080` by default which can be changed with the `HOST_PORT` environment variable. When running in the background the container name defaults to `petclinic` but can be overridden using `CONTAINER_NAME`.
+
 When `graalvm` is selected the application is first compiled to a native image using GraalVM's `native-image` tool before running.
+
+### Docker images
+
+`run_petclinic.sh` uses the following Docker images by default:
+
+- `eclipse-temurin:8-jdk`
+- `eclipse-temurin:11-jdk`
+- `eclipse-temurin:23-jdk`
+- `ghcr.io/graalvm/jdk:23`
+- `ghcr.io/crac/openjdk17:latest` (for CRaC mode)
 
 ```bash
 # Start PetClinic with JDK 11 (default)
@@ -38,8 +50,9 @@ then runs the application using that archive.
 When the container is running, access the application at `http://localhost:$HOST_PORT`.
 Press `Ctrl+C` to stop and remove the container.
 
-When running in `crac` mode the script uses a CRaC-enabled JDK image. Set the
-`CRAC_IMAGE` environment variable to override the Docker image name if needed.
+When running in `crac` mode the script uses a CRaC-enabled JDK image. By default
+it pulls `ghcr.io/crac/openjdk17:latest`. Set the `CRAC_IMAGE` environment
+variable to override the Docker image name if needed.
 
 ## VisualVM and JMX
 
