@@ -35,10 +35,13 @@ jobs:
           for i in {1..30}; do
             if curl -s http://localhost:8080 >/dev/null; then
               echo "PetClinic started"
-              break
+              exit 0
             fi
             sleep 5
           done
+          echo "PetClinic failed to start" >&2
+          docker logs petclinic || true
+          exit 1
 
       - name: Run JMeter test
         run: |
@@ -46,7 +49,7 @@ jobs:
 
       - name: Stop PetClinic
         if: always()
-        run: docker rm -f petclinic
+        run: docker rm -f petclinic || true
 
       - name: Upload JMeter Results
         if: always()
