@@ -17,6 +17,7 @@ jobs:
       - name: Start PetClinic container (${{ matrix.jdk }})
         run: |
           set -euxo pipefail
+          CRAC_IMAGE=""
           case "${{ matrix.jdk }}" in
             crac)
               ARGS="23 crac"
