@@ -16,6 +16,7 @@ jobs:
 
       - name: Start PetClinic container (${{ matrix.jdk }})
         run: |
+          set -euxo pipefail
           case "${{ matrix.jdk }}" in
             crac)
               ARGS="23 crac"
@@ -32,6 +33,7 @@ jobs:
 
       - name: Wait for PetClinic
         run: |
+          set -euxo pipefail
           for i in {1..30}; do
             if curl -s http://localhost:8080 >/dev/null; then
               echo "PetClinic started"
@@ -45,11 +47,18 @@ jobs:
 
       - name: Run JMeter test
         run: |
+          set -euxo pipefail
           docker run --rm -v ${{ github.workspace }}/jmeter:/tests justb4/jmeter:5.5 -n -t /tests/petclinic.jmx -l /tests/results.jtl
+
+      - name: Container logs
+        if: always()
+        run: docker logs petclinic || true
 
       - name: Stop PetClinic
         if: always()
-        run: docker rm -f petclinic || true
+        run: |
+          set -euxo pipefail
+          docker rm -f petclinic || true
 
       - name: Upload JMeter Results
         if: always()

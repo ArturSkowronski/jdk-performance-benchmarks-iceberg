@@ -13,8 +13,9 @@ jobs:
 
       - name: Start PetClinic container
         run: |
+          set -euxo pipefail
           docker run -d --name petclinic -p 8080:8080 eclipse-temurin:11-jdk bash -c '
-            set -e
+            set -euxo pipefail
             apt-get update
             apt-get install -y git curl > /dev/null
             git clone --depth 1 https://github.com/spring-projects/spring-petclinic.git
@@ -25,21 +26,32 @@ jobs:
 
       - name: Wait for PetClinic
         run: |
+          set -euxo pipefail
           for i in {1..30}; do
             if curl -s http://localhost:8080 >/dev/null; then
               echo "PetClinic started"
-              break
+              exit 0
             fi
             sleep 5
           done
+          echo "PetClinic failed to start" >&2
+          docker logs petclinic || true
+          exit 1
 
       - name: Run JMeter test
         run: |
+          set -euxo pipefail
           docker run --rm -v ${{ github.workspace }}/jmeter:/tests justb4/jmeter:5.5 -n -t /tests/petclinic.jmx -l /tests/results.jtl
+
+      - name: Container logs
+        if: always()
+        run: docker logs petclinic || true
 
       - name: Stop PetClinic
         if: always()
-        run: docker rm -f petclinic
+        run: |
+          set -euxo pipefail
+          docker rm -f petclinic || true
 
       - name: Upload JMeter Results
         if: always()

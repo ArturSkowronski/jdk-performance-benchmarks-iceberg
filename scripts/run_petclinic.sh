@@ -14,9 +14,12 @@
 #
 
 set -euo pipefail
+set -x
 
 JDK_VERSION="${1:-11}"
 MODE="${2:-}"
+
+echo "JDK_VERSION=$JDK_VERSION MODE=$MODE"
 
 # Validate MODE, if provided
 if [[ -n "$MODE" && "$MODE" != "appcds" && "$MODE" != "crac" ]]; then
@@ -44,6 +47,8 @@ case "$JDK_VERSION" in
     ;;
 esac
 
+echo "Using Docker image: $IMAGE"
+
 # If CRaC mode selected, allow custom CRaC-enabled image
 if [[ "$MODE" == "crac" ]]; then
   IMAGE="${CRAC_IMAGE:-ghcr.io/crac/openjdk17:latest}"
@@ -52,7 +57,7 @@ fi
 # Create the script that will run *inside* the container
 cat <<'SCRIPT' >/tmp/run-petclinic.sh
 #!/usr/bin/env bash
-set -e
+set -euxo pipefail
 
 # Expect env vars:  MODE JDK_VERSION JMX_PORT
 apt-get update -y >/dev/null
