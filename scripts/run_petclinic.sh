@@ -35,7 +35,7 @@ RUN_BACKGROUND="${RUN_BACKGROUND:-0}"
 case "$JDK_VERSION" in
   8)      IMAGE="eclipse-temurin:8-jdk-jammy" ;;
   11)     IMAGE="eclipse-temurin:11-jdk-jammy" ;;
-  23)     IMAGE="eclipse-temurin:23-jdk-jammy" ;;
+  23)     IMAGE="eclipse-temurin:23-jdk" ;;
   graalvm) IMAGE="ghcr.io/graalvm/jdk:23" ;;
   *)
     echo "Unsupported JDK version: $JDK_VERSION"
