@@ -19,6 +19,7 @@ jobs:
           case "${{ matrix.jdk }}" in
             crac)
               ARGS="23 crac"
+              CRAC_IMAGE="ghcr.io/crac/openjdk17:latest"
               ;;
             graalvm)
               ARGS="graalvm"
@@ -27,7 +28,7 @@ jobs:
               ARGS="${{ matrix.jdk }}"
               ;;
           esac
-          RUN_BACKGROUND=1 CONTAINER_NAME=petclinic ./scripts/run_petclinic.sh $ARGS
+          RUN_BACKGROUND=1 CONTAINER_NAME=petclinic CRAC_IMAGE="$CRAC_IMAGE" ./scripts/run_petclinic.sh $ARGS
 
       - name: Wait for PetClinic
         run: |

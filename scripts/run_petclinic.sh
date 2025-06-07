@@ -46,7 +46,7 @@ esac
 
 # If CRaC mode selected, allow custom CRaC-enabled image
 if [[ "$MODE" == "crac" ]]; then
-  IMAGE="${CRAC_IMAGE:-crac-jdk:17}"
+  IMAGE="${CRAC_IMAGE:-ghcr.io/crac/openjdk17:latest}"
 fi
 
 # Create the script that will run *inside* the container
