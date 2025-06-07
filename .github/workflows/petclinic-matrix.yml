@@ -1,0 +1,56 @@
+name: PetClinic Build Matrix
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        jdk: [ "8", "11", "23", "graalvm", "crac" ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start PetClinic container (${{ matrix.jdk }})
+        run: |
+          case "${{ matrix.jdk }}" in
+            crac)
+              ARGS="23 crac"
+              CRAC_IMAGE="ghcr.io/crac/openjdk17:latest"
+              ;;
+            graalvm)
+              ARGS="graalvm"
+              ;;
+            *)
+              ARGS="${{ matrix.jdk }}"
+              ;;
+          esac
+          RUN_BACKGROUND=1 CONTAINER_NAME=petclinic CRAC_IMAGE="$CRAC_IMAGE" ./scripts/run_petclinic.sh $ARGS
+
+      - name: Wait for PetClinic
+        run: |
+          for i in {1..30}; do
+            if curl -s http://localhost:8080 >/dev/null; then
+              echo "PetClinic started"
+              break
+            fi
+            sleep 5
+          done
+
+      - name: Run JMeter test
+        run: |
+          docker run --rm -v ${{ github.workspace }}/jmeter:/tests justb4/jmeter:5.5 -n -t /tests/petclinic.jmx -l /tests/results.jtl
+
+      - name: Stop PetClinic
+        if: always()
+        run: docker rm -f petclinic
+
+      - name: Upload JMeter Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jmeter-results-${{ matrix.jdk }}
+          path: jmeter/results.jtl

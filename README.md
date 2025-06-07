@@ -38,8 +38,9 @@ then runs the application using that archive.
 When the container is running, access the application at `http://localhost:$HOST_PORT`.
 Press `Ctrl+C` to stop and remove the container.
 
-When running in `crac` mode the script uses a CRaC-enabled JDK image. Set the
-`CRAC_IMAGE` environment variable to override the Docker image name if needed.
+When running in `crac` mode the script uses a CRaC-enabled JDK image. By default
+it pulls `ghcr.io/crac/openjdk17:latest`. Set the `CRAC_IMAGE` environment
+variable to override the Docker image name if needed.
 
 ## VisualVM and JMX
 
